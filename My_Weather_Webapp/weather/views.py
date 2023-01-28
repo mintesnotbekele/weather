@@ -4,7 +4,8 @@ from .models import City
 from .forms import CityForm
 # Create your views here.
 def index(request):
-    url = 'http://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=2a9ce9ecca5ad85a5346c73b74d78712s'
+   
+   
     err_msg = ''
     message = ''
     message_class = ''
@@ -14,7 +15,10 @@ def index(request):
             new_city = form.cleaned_data['name']
             existing_city_count = City.objects.filter(name=new_city).count()
             if existing_city_count == 0:
-                r = requests.get(url.format(new_city)).json()
+               
+                url = "https://api.openweathermap.org/data/2.5/weather?APPID=2a9ce9ecca5ad85a5346c73b74d78712&q=" + new_city
+                r = requests.get(url).json()
+               
                 if r['cod'] == 200:
                     form.save()
                 else:
@@ -30,12 +34,19 @@ def index(request):
     
     form = CityForm()
     cities = City.objects.all()
+    
     weather_data = []
     for city in cities:
-        r = requests.get(url.format(city)).json()
+        print(city.name)
+        urls = "https://api.openweathermap.org/data/2.5/weather?APPID=2a9ce9ecca5ad85a5346c73b74d78712&q=" + city.name
+        print(urls)
+        r = requests.get(urls).json()
+        print(r)
         city_weather = {
             'city' : city.name,
-            'temperature' : r['main']['temp'],
+            'temperature' : round(r['main']['temp'] - 273.15,2),
+            'max' : r['main']['temp_max'],
+            'min' : r['main']['temp_min'],           
             'description' : r['weather'][0]['description'],
             'icon' : r['weather'][0]['icon'],
         }
